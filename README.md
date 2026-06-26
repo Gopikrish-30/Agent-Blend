@@ -132,6 +132,48 @@ Restart Claude Desktop. The Blender tools will appear in the tool list.
 </details>
 
 <details>
+<summary><strong>Antigravity IDE</strong></summary>
+
+1. Edit your MCP config file:
+   - **Windows:** `C:\Users\{username}\.gemini\antigravity\mcp_config.json`
+   - **macOS/Linux:** `~/.gemini/antigravity/mcp_config.json`
+
+2. Add blend-ai to the config (see also `mcp-config.example.json` in this repo):
+
+```json
+{
+  "mcpServers": {
+    "blend-ai": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/blend-ai", "blend-ai"],
+      "env": {
+        "BLENDER_HOST": "127.0.0.1",
+        "BLENDER_PORT": "9876"
+      }
+    }
+  }
+}
+```
+
+Replace `/path/to/blend-ai` with the absolute path to your clone. Use forward slashes `/` even on Windows (e.g. `C:/Users/yourname/blend-ai`).
+
+3. Restart Antigravity IDE to load the server.
+
+4. In Blender, open the **N-panel** (press `N`), find the **blend-ai** tab, and click **Start Server**.
+
+**Usage:**
+
+```
+> Create a red metallic sphere on a white plane with three-point lighting
+
+> Add a subdivision surface modifier to the sphere and set it to level 3
+
+> Analyze the mesh quality of the sphere and fix any issues
+```
+
+</details>
+
+<details>
 <summary><strong>Other MCP Clients</strong></summary>
 
 blend-ai is a standard MCP server using stdio transport. Any MCP-compatible client can connect by running the server directly:

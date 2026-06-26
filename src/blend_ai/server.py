@@ -1,5 +1,7 @@
 """MCP Server entry point for blend-ai."""
 
+import os
+
 from mcp.server.fastmcp import FastMCP
 
 from blend_ai.connection import BlenderConnection
@@ -18,7 +20,9 @@ def get_connection() -> BlenderConnection:
     """Get or create the global Blender connection."""
     global _connection
     if _connection is None:
-        _connection = BlenderConnection()
+        host = os.environ.get("BLENDER_HOST", BlenderConnection.DEFAULT_HOST)
+        port = int(os.environ.get("BLENDER_PORT", str(BlenderConnection.DEFAULT_PORT)))
+        _connection = BlenderConnection(host=host, port=port)
     return _connection
 
 

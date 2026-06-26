@@ -1,6 +1,7 @@
 """Blender N-panel UI for blend-ai server control."""
 
 import bpy
+import addon_utils
 
 from . import server as addon_server
 
@@ -17,14 +18,48 @@ class BLENDAI_PT_MainPanel(bpy.types.Panel):
         layout = self.layout
         srv = addon_server.get_server()
 
+        # -------------------------------------------------------------
+        # Section 1: Server Status
+        # -------------------------------------------------------------
+        box = layout.box()
+        box.label(text="Server Connection", icon="WORLD")
+        
         if srv.is_running:
             port = srv._port
-            layout.label(text=f"Server: Running (port {port})", icon="CHECKMARK")
-            layout.operator("blendai.stop_server", text="Stop Server", icon="CANCEL")
+            box.label(text=f"Status: Running (port {port})", icon="CHECKMARK")
+            box.operator("blendai.stop_server", text="Stop Server", icon="CANCEL")
         else:
-            layout.label(text="Server: Stopped", icon="X")
-            layout.prop(context.scene, "blendai_port", text="Port")
-            layout.operator("blendai.start_server", text="Start Server", icon="PLAY")
+            box.label(text="Status: Stopped", icon="X")
+            box.prop(context.scene, "blendai_port", text="Port")
+            box.operator("blendai.start_server", text="Start Server", icon="PLAY")
+
+        layout.separator()
+
+        # -------------------------------------------------------------
+        # Section 2: Extensions Status
+        # -------------------------------------------------------------
+        ext_box = layout.box()
+        ext_box.label(text="Design Extensions", icon="PREFERENCES")
+
+        enabled_addons = bpy.context.preferences.addons.keys()
+
+        # Node Wrangler
+        nw_enabled = "node_wrangler" in enabled_addons
+        row = ext_box.row()
+        row.label(text="Node Wrangler", icon="CHECKMARK" if nw_enabled else "X")
+        if not nw_enabled:
+            op = row.operator("blendai.enable_addon", text="Enable", icon="ADD")
+            op.module_name = "node_wrangler"
+
+        # Archimesh
+        arch_module = "bl_ext.blender_org.archimesh"
+        arch_enabled = arch_module in enabled_addons
+        row2 = ext_box.row()
+        row2.label(text="Archimesh", icon="CHECKMARK" if arch_enabled else "X")
+        if not arch_enabled:
+            op = row2.operator("blendai.enable_addon", text="Enable", icon="ADD")
+            op.module_name = arch_module
+
 
 
 class BLENDAI_OT_StartServer(bpy.types.Operator):
@@ -50,10 +85,29 @@ class BLENDAI_OT_StopServer(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class BLENDAI_OT_EnableAddon(bpy.types.Operator):
+    """Enable a specified Blender addon"""
+    bl_idname = "blendai.enable_addon"
+    bl_label = "Enable Addon"
+    
+    module_name: bpy.props.StringProperty()
+
+    def execute(self, context):
+        try:
+            addon_utils.enable(self.module_name, default_set=True)
+            bpy.ops.wm.save_userpref()
+            self.report({"INFO"}, f"Addon '{self.module_name}' enabled successfully.")
+            return {"FINISHED"}
+        except Exception as e:
+            self.report({"ERROR"}, f"Failed to enable '{self.module_name}': {str(e)}")
+            return {"CANCELLED"}
+
+
 classes = (
     BLENDAI_PT_MainPanel,
     BLENDAI_OT_StartServer,
     BLENDAI_OT_StopServer,
+    BLENDAI_OT_EnableAddon,
 )
 
 

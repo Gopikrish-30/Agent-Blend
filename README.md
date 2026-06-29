@@ -4,8 +4,6 @@
 
 Agent-Blend is a powerful MCP (Model Context Protocol) server that bridges AI assistants with Blender. It goes beyond simple tool exposure — it guides the LLM to produce professional 3D results through expert prompts, proven workflows, visual feedback, and mesh quality analysis.
 
-![Agent-Blend screenshot](./screenshot.png)
-
 ---
 
 ## What is Agent-Blend?

@@ -181,67 +181,8 @@ You should see a confirmation that the server is running on `127.0.0.1:9876`.
 
 </details>
 
-<details>
-<summary><strong>Claude Desktop</strong></summary>
-
-Open your Claude Desktop config file:
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-Add:
-
-```json
-{
-  "mcpServers": {
-    "blend-ai": {
-      "command": "uv",
-      "args": ["run", "--directory", "/absolute/path/to/Agent-Blend", "blend-ai"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop. The Blender tools will appear in the tool list.
-
-</details>
-
-<details>
-<summary><strong>Claude Code (CLI)</strong></summary>
-
-```bash
-claude mcp add blend-ai -- uv run --directory /absolute/path/to/Agent-Blend blend-ai
-```
-
-**Example usage:**
-
-```
-$ claude
-
-> Create a red metallic sphere on a white plane with three-point lighting
-
-> Set up a turntable animation and render it to /tmp/turntable/
-```
-
-</details>
-
-<details>
-<summary><strong>Other MCP clients</strong></summary>
-
-Agent-Blend uses standard MCP stdio transport — any MCP-compatible client can connect:
-
-```bash
-uv run --directory /absolute/path/to/Agent-Blend blend-ai
-# or
-python -m blend_ai.server
-```
-
-The `command` is `uv` and `args` are `["run", "--directory", "/path/to/Agent-Blend", "blend-ai"]`.
-
-The server communicates over stdin/stdout (MCP protocol) and connects to Blender over TCP at `127.0.0.1:9876`.
-
-</details>
-
 ---
+
 
 ## Building the Addon
 

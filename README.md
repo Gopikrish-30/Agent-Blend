@@ -1,53 +1,99 @@
-# blend-ai
+# Agent-Blend
 
-The most intuitive and efficient MCP Server for Blender. Control Blender entirely through AI assistants like Claude — create 3D models, set up scenes, animate, render, and more, all through natural language.
+> **Control Blender entirely through AI — create 3D models, set up scenes, animate, render, and more, all through natural language.**
 
-**blend-ai goes beyond tool exposure: it guides the LLM to produce professional 3D results** through expert prompts, proven workflows, visual feedback, and mesh quality analysis.
+Agent-Blend is a powerful MCP (Model Context Protocol) server that bridges AI assistants with Blender. It goes beyond simple tool exposure — it guides the LLM to produce professional 3D results through expert prompts, proven workflows, visual feedback, and mesh quality analysis.
 
-<small>This was created via Claude Code using the Haiku model and 20 random reference images. It took 5 minutes:</small>
+![Agent-Blend screenshot](./screenshot.png)
 
-![blend-ai screenshot](./screenshot.png)
+---
 
-## Key Features
+## What is Agent-Blend?
 
-- **164 tools** across 24 modules covering every major Blender domain: modeling, mesh editing, materials, shader nodes, lighting, camera, animation, rendering, sculpting, UV mapping, physics, geometry nodes, rigging, curves, annotations, collections, file I/O, Bool Tool, viewport control, mesh quality analysis, and extension suggestions
-- **12 expert prompts** — topology best practices, real-world scale references, lighting principles, studio setup, character basemesh workflow, PBR material guide, auto-critique feedback loop, and more
-- **Visual feedback loop** — fast viewport screenshots via OpenGL render (~ms, not seconds) with auto-critique prompts that guide the LLM to check its own work
-- **Mesh quality analysis** — structured reports covering non-manifold edges, loose vertices, zero-area faces, duplicate vertices, and wire edges
-- **Extension suggestions** — proactively recommends Bool Tool, LoopTools, and Node Wrangler when a task would benefit from them (skips already-installed extensions)
-- **Sandboxed code execution** — `execute_blender_code` blocks dangerous imports (`os`, `subprocess`, `socket`, etc.) and dangerous builtins (`exec`, `eval`, `open`) while allowing safe Blender operations
-- **Render-aware** — automatically detects when Blender is rendering and queues commands. Recovers from stuck render guards via `load_post` handler and reset command
-- **Blender 4.2+ compatible** — ships as a Blender Extension; tested against Blender 5.1 with EEVEE identifier, Annotation API, sculpt stroke_method, SLIM UV unwrap, Raycast shader node, and EEVEE light path intensity controls
-- **Custom port** — configure the server port from the N-panel UI (default: 9876, range: 1024–65535)
-- **Zero telemetry** — no usage tracking, no analytics, no data collection. Everything runs locally on `127.0.0.1`
-- **Zero-dependency addon** — the Blender addon uses only Python stdlib + `bpy`. Nothing to pip install inside Blender
-- **Thread-safe architecture** — background TCP server with queue-based main-thread execution, TCP keepalive for stale connection detection
-- **1190 tests** — comprehensive coverage across tools, handlers, validators, prompts, and the cross-platform installer (ubuntu/macos/windows × py3.11/3.13 in CI)
+Agent-Blend connects AI assistants (like those running in Antigravity IDE, Claude, or any MCP-compatible client) directly to a live Blender session. You describe what you want in plain language, and the AI uses Blender's full toolset to make it happen — no scripting required.
 
-## Quickstart
+**Key highlights:**
 
-### 1. Install the MCP server
+- 🛠️ **164 tools** across 24 modules — modeling, mesh editing, materials, shader nodes, lighting, camera, animation, rendering, sculpting, UV mapping, physics, geometry nodes, rigging, curves, annotations, collections, file I/O, Bool Tool, viewport control, mesh quality analysis
+- 🧠 **12 expert prompts** — built-in guidance on topology, real-world scale, lighting principles, PBR materials, character modeling, scene cleanup, and more
+- 📸 **Visual feedback loop** — fast OpenGL viewport screenshots with auto-critique prompts that guide the AI to verify its own work
+- 🔍 **Mesh quality analysis** — structured defect reports: non-manifold edges, loose vertices, zero-area faces, duplicate vertices, wire edges
+- 🔒 **Sandboxed code execution** — `execute_blender_code` blocks dangerous system imports while allowing safe Blender operations
+- 🔄 **Render-aware** — detects Blender render state and queues commands; auto-recovers from stuck render guards
+- ✅ **Blender 4.2+ compatible** — ships as a Blender Extension; tested against Blender 5.1
+- 🔌 **Custom port** — configure from the N-panel UI (default: `9876`)
+- 🚫 **Zero telemetry** — no tracking, no analytics, everything runs locally on `127.0.0.1`
+- 📦 **Zero-dependency addon** — the Blender addon uses only Python stdlib + `bpy`
+- 🧵 **Thread-safe** — background TCP server with queue-based main-thread execution
+- 🧪 **1190 tests** — comprehensive coverage across tools, handlers, validators, and prompts
+
+---
+
+## Requirements
+
+| Requirement | Minimum Version |
+|-------------|----------------|
+| Blender | 4.2 LTS or later |
+| Python | 3.10 or later |
+| `uv` | Latest recommended |
+
+> **Blender 4.0 / 4.1 users:** Not supported. Agent-Blend ships as a Blender Extension, which requires Blender 4.2 or later. Download the latest Blender from [blender.org/download](https://www.blender.org/download/).
+
+---
+
+## Installation
+
+### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/HoldMyBeer-gg/blend-ai.git
-cd blend-ai
+git clone https://github.com/Gopikrish-30/Agent-Blend.git
+cd Agent-Blend
+```
+
+### Step 2 — Install `uv` (if not already installed)
+
+`uv` is a fast Python package manager used to run Agent-Blend.
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Verify installation:
+
+```bash
+uv --version
+```
+
+### Step 3 — Install the MCP server
+
+```bash
 uv pip install -e .
 ```
 
-### 2. Install the Blender addon
+This installs Agent-Blend and its dependencies (`mcp`, `pydantic`) into a virtual environment managed by `uv`.
 
-1. Download the latest addon zip from [GitHub Releases](https://github.com/HoldMyBeer-gg/blend-ai/releases)
-2. Open Blender 4.2 or later
-3. Go to **Edit > Preferences > Get Extensions**, click the dropdown (▾) top-right, and choose **Install from Disk...**
-4. Select the downloaded `.zip` file
-5. Enable **"blend-ai"** in the extensions list
+### Step 4 — Install the Blender addon
 
-> **Blender 4.0 / 4.1 users:** Not supported. blend-ai ships as a Blender Extension, which requires Blender 4.2 (LTS) or later. Please upgrade Blender from [blender.org/download](https://www.blender.org/download/).
+1. Locate the `blend-ai.zip` file in the repository root (or build it yourself — see [Building the addon](#building-the-addon))
+2. Open **Blender 4.2 or later**
+3. Go to **Edit → Preferences → Get Extensions**
+4. Click the dropdown **▾** in the top-right corner
+5. Select **Install from Disk...**
+6. Choose the `blend-ai.zip` file
+7. Enable **"blend-ai"** in the extensions list
+
+The addon is now installed. You will see a **blend-ai** tab in Blender's N-panel (press `N` in the 3D Viewport to open it).
 
 <details>
-<summary><strong>Developer install (symlink)</strong></summary>
+<summary><strong>Developer install (symlink — recommended for contributors)</strong></summary>
 
-If you're developing on blend-ai, symlink the addon folder into Blender's user extensions directory instead. Replace `<ver>` with your Blender version (e.g. `4.2`, `5.1`).
+If you're developing or modifying Agent-Blend, symlink the `addon/` folder directly into Blender's extensions directory. This means you don't need to reinstall the zip after every change — just restart Blender.
+
+Replace `<ver>` with your Blender version (e.g. `4.2`, `5.1`):
 
 ```bash
 # macOS
@@ -56,96 +102,59 @@ ln -s "$(pwd)/addon" ~/Library/Application\ Support/Blender/<ver>/extensions/use
 # Linux
 ln -s "$(pwd)/addon" ~/.config/blender/<ver>/extensions/user_default/blend_ai
 
-# Windows (run as admin)
+# Windows (run PowerShell as Administrator)
 mklink /D "%APPDATA%\Blender Foundation\Blender\<ver>\extensions\user_default\blend_ai" "%cd%\addon"
 ```
 
-Then enable the extension in Blender preferences under **Get Extensions > User**.
+Then enable the extension in Blender under **Get Extensions → User**.
 
 </details>
 
 <details>
 <summary><strong>Upgrading from a previous version</strong></summary>
 
-blend-ai ships as a Blender Extension (`blender_manifest.toml`), installed under **Edit > Preferences > Get Extensions**. Python caches imported modules, so replacing files in-place without a restart can leave stale handlers registered.
+Python caches imported modules, so replacing files in-place without a full restart can leave stale handlers registered. Always follow these steps when upgrading:
 
-1. If the server is running, open the N-panel **blend-ai** tab and click **Stop Server**.
-2. In Blender, open **Edit > Preferences > Get Extensions**, find **blend-ai**, and click **Uninstall**.
-3. Quit and restart Blender (this clears cached `blend_ai` modules).
-4. Install the new `.zip` via the **▾ > Install from Disk...** menu and enable it.
+1. In Blender's N-panel → **blend-ai** tab → click **Stop Server**
+2. Go to **Edit → Preferences → Get Extensions**, find **blend-ai**, and click **Uninstall**
+3. Fully quit and restart Blender (clears cached modules)
+4. Install the new `.zip` via **▾ → Install from Disk...** and enable it
 
-For the developer symlink install, upgrading is just `git pull` followed by a full Blender restart — do not rely on reloading scripts, because the background TCP server thread survives reloads.
-
-</details>
-
-### 3. Start the server in Blender
-
-In Blender's 3D Viewport, open the **N-panel** (press `N`), find the **blend-ai** tab. Set your preferred port (default: 9876), then click **Start Server**.
-
-### 4. Connect your AI assistant
-
-<details>
-<summary><strong>Claude Code</strong></summary>
-
-```bash
-claude mcp add blend-ai -- uv run --directory /path/to/blend-ai blend-ai
-```
-
-Replace `/path/to/blend-ai` with the actual path to your clone. Make sure Blender is running with the addon server started before using the tools.
-
-**Usage:**
-
-```
-$ claude
-
-> Create a red metallic sphere on a white plane with three-point lighting
-
-> Add a subdivision surface modifier to the sphere and set it to level 3
-
-> Analyze the mesh quality of the sphere and fix any issues
-
-> Set up a turntable animation and render it to /tmp/turntable/
-```
+For the symlink developer install, upgrading is just `git pull` followed by a full Blender restart.
 
 </details>
 
-<details>
-<summary><strong>Claude Desktop</strong></summary>
+---
 
-Add blend-ai to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+### Step 5 — Start the server in Blender
 
-```json
-{
-  "mcpServers": {
-    "blend-ai": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/blend-ai", "blend-ai"]
-    }
-  }
-}
-```
+1. Open Blender's 3D Viewport
+2. Press `N` to open the **N-panel** (side panel on the right)
+3. Find the **blend-ai** tab
+4. Set your preferred port (default: `9876`)
+5. Click **Start Server**
 
-Replace `/path/to/blend-ai` with the actual path to your clone.
+You should see a confirmation that the server is running on `127.0.0.1:9876`.
 
-Restart Claude Desktop. The Blender tools will appear in the tool list.
+---
 
-</details>
+### Step 6 — Connect your AI assistant
 
 <details>
 <summary><strong>Antigravity IDE</strong></summary>
 
-1. Edit your MCP config file:
+1. Find your MCP config file:
    - **Windows:** `C:\Users\{username}\.gemini\antigravity\mcp_config.json`
-   - **macOS/Linux:** `~/.gemini/antigravity/mcp_config.json`
+   - **macOS / Linux:** `~/.gemini/antigravity/mcp_config.json`
 
-2. Add blend-ai to the config (see also `mcp-config.example.json` in this repo):
+2. Add the following entry (see also `mcp-config.example.json` in this repo):
 
 ```json
 {
   "mcpServers": {
     "blend-ai": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/blend-ai", "blend-ai"],
+      "args": ["run", "--directory", "/absolute/path/to/Agent-Blend", "blend-ai"],
       "env": {
         "BLENDER_HOST": "127.0.0.1",
         "BLENDER_PORT": "9876"
@@ -155,13 +164,12 @@ Restart Claude Desktop. The Blender tools will appear in the tool list.
 }
 ```
 
-Replace `/path/to/blend-ai` with the absolute path to your clone. Use forward slashes `/` even on Windows (e.g. `C:/Users/yourname/blend-ai`).
+> Replace `/absolute/path/to/Agent-Blend` with the real path to your cloned folder. On Windows, use forward slashes (e.g. `C:/Users/yourname/Agent-Blend`).
 
-3. Restart Antigravity IDE to load the server.
+3. Restart Antigravity IDE to load the server
+4. Make sure Blender is running with the server started (Step 5)
 
-4. In Blender, open the **N-panel** (press `N`), find the **blend-ai** tab, and click **Start Server**.
-
-**Usage:**
+**Example prompts:**
 
 ```
 > Create a red metallic sphere on a white plane with three-point lighting
@@ -174,24 +182,86 @@ Replace `/path/to/blend-ai` with the absolute path to your clone. Use forward sl
 </details>
 
 <details>
-<summary><strong>Other MCP Clients</strong></summary>
+<summary><strong>Claude Desktop</strong></summary>
 
-blend-ai is a standard MCP server using stdio transport. Any MCP-compatible client can connect by running the server directly:
+Open your Claude Desktop config file:
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-```bash
-uv run --directory /path/to/blend-ai blend-ai
-# or: python -m blend_ai.server
+Add:
+
+```json
+{
+  "mcpServers": {
+    "blend-ai": {
+      "command": "uv",
+      "args": ["run", "--directory", "/absolute/path/to/Agent-Blend", "blend-ai"]
+    }
+  }
+}
 ```
 
-The exact config location and format vary by client (typically JSON or TOML under `~/.<client>/`). The `command` is `uv` and the `args` are `["run", "--directory", "/path/to/blend-ai", "blend-ai"]`.
-
-The server communicates over stdin/stdout using the MCP protocol. It connects to Blender's addon over TCP on `127.0.0.1:9876` (or your configured port).
+Restart Claude Desktop. The Blender tools will appear in the tool list.
 
 </details>
 
-## Expert Guidance
+<details>
+<summary><strong>Claude Code (CLI)</strong></summary>
 
-blend-ai includes 12 MCP prompts that guide the LLM toward professional-quality results:
+```bash
+claude mcp add blend-ai -- uv run --directory /absolute/path/to/Agent-Blend blend-ai
+```
+
+**Example usage:**
+
+```
+$ claude
+
+> Create a red metallic sphere on a white plane with three-point lighting
+
+> Set up a turntable animation and render it to /tmp/turntable/
+```
+
+</details>
+
+<details>
+<summary><strong>Other MCP clients</strong></summary>
+
+Agent-Blend uses standard MCP stdio transport — any MCP-compatible client can connect:
+
+```bash
+uv run --directory /absolute/path/to/Agent-Blend blend-ai
+# or
+python -m blend_ai.server
+```
+
+The `command` is `uv` and `args` are `["run", "--directory", "/path/to/Agent-Blend", "blend-ai"]`.
+
+The server communicates over stdin/stdout (MCP protocol) and connects to Blender over TCP at `127.0.0.1:9876`.
+
+</details>
+
+---
+
+## Building the Addon
+
+To build the `blend-ai.zip` addon from source:
+
+```bash
+# Linux / macOS
+bash build.sh
+
+# Windows (PowerShell)
+.\build.ps1
+```
+
+The built `.zip` will appear in the project root, ready to install in Blender.
+
+---
+
+## Expert Guidance (Built-in Prompts)
+
+Agent-Blend includes 12 MCP prompts that guide the AI toward professional-quality results:
 
 | Prompt | What It Teaches |
 |--------|----------------|
@@ -202,11 +272,13 @@ blend-ai includes 12 MCP prompts that guide the LLM toward professional-quality 
 | `studio_lighting_setup` | 6-step studio lighting workflow with specific energy values |
 | `character_basemesh_workflow` | 7-step character base mesh from cube with mirror + subdivision |
 | `material_workflow_guide` | PBR materials, Principled BSDF recipes, texture color spaces |
-| `auto_critique_workflow` | Visual feedback loop — when to screenshot, what to check, token budget |
+| `auto_critique_workflow` | Visual feedback loop — when to screenshot, what to check |
 | `product_shot_setup` | Professional product shot setup guide |
 | `character_base_mesh` | Character modeling guide |
 | `scene_cleanup` | Scene organization workflow |
 | `animation_turntable` | Turntable animation setup |
+
+---
 
 ## Tool Domains
 
@@ -215,37 +287,39 @@ blend-ai includes 12 MCP prompts that guide the LLM toward professional-quality 
 
 | Domain | Tools | Highlights |
 |--------|-------|-----------|
-| Scene | 6 | Get scene info, set frame range, manage scenes, suggest helpful extensions |
+| Scene | 6 | Get scene info, set frame range, manage scenes, suggest extensions |
 | Objects | 14 | Create primitives, duplicate, parent, join, visibility, origin, convert, auto-smooth |
 | Transforms | 6 | Position, rotation (euler/quat), scale, apply, snap |
 | Modeling | 13 | Modifiers, booleans, subdivide, extrude, bevel, loop cut, bridge edge loops |
 | Mesh Editing | 16 | Inset, fill, grid fill, mark seam/sharp, normals, dissolve, knife project, spin, crease |
 | Mesh Quality | 1 | Analyze mesh defects: non-manifold, loose verts, zero-area faces, duplicates |
-| Bool Tool | 4 | Auto union, difference, intersect, slice (via Blender's Bool Tool addon) |
-| Materials | 15 | Principled BSDF, textures, blend modes, shader node graph (add/connect/remove nodes, including 5.1 Raycast node) |
+| Bool Tool | 4 | Auto union, difference, intersect, slice |
+| Materials | 15 | Principled BSDF, textures, blend modes, shader node graph |
 | Lighting | 7 | Point/sun/spot/area lights, HDRIs, light rigs, shadows |
 | Camera | 6 | Create, aim, DOF, viewport capture, active camera |
 | Animation | 8 | Keyframes, interpolation, frame range, follow path |
 | Rendering | 7 | Engine, resolution, samples, output format, render, EEVEE light path intensity |
 | Curves | 10 | Bezier/NURBS/path, 3D text, convert, reverse, handle types, cyclic, subdivide |
-| Sculpting | 8 | Brushes, remesh, multires, symmetry, dynamic topology, stroke_method |
-| UV Mapping | 4 | Smart project, unwrap (ANGLE_BASED, CONFORMAL, SLIM), projection, pack islands |
+| Sculpting | 8 | Brushes, remesh, multires, symmetry, dynamic topology |
+| UV Mapping | 4 | Smart project, unwrap, projection, pack islands |
 | Physics | 9 | Rigid body, cloth, fluid, particles (velocity, rendering, delete), bake |
 | Geometry Nodes | 5 | Create node trees, add/connect nodes, set inputs |
 | Armature | 6 | Bones, constraints, auto weights, pose |
-| Annotations | 5 | Annotation layers and strokes (5.1 Annotation API) |
+| Annotations | 5 | Annotation layers and strokes |
 | Collections | 4 | Create, move objects, visibility, delete |
 | File I/O | 5 | Import/export (FBX, OBJ, glTF, USD, STL...), save/open |
 | Viewport | 3 | Shading mode, overlays, focus on object |
-| Screenshot | 1 | Fast viewport capture (OpenGL) or full render, base64 output |
-| Code Exec | 1 | Sandboxed Python execution in Blender (dangerous imports blocked) |
+| Screenshot | 1 | Fast OpenGL viewport capture or full render, base64 output |
+| Code Exec | 1 | Sandboxed Python execution in Blender |
 
 </details>
+
+---
 
 ## Architecture
 
 ```
-AI Assistant <--stdio/MCP--> blend-ai server <--TCP socket--> Blender addon <--bpy--> Blender
+AI Assistant <--stdio/MCP--> Agent-Blend server <--TCP socket--> Blender addon <--bpy--> Blender
 ```
 
 <details>
@@ -253,49 +327,55 @@ AI Assistant <--stdio/MCP--> blend-ai server <--TCP socket--> Blender addon <--b
 
 - **MCP Server** (`src/blend_ai/`): Python process using the `mcp` SDK. Exposes tools, resources, and prompts over stdio. Validates all inputs before forwarding to Blender.
 - **Blender Addon** (`addon/`): Runs a TCP socket server inside Blender on a background thread. Commands are queued and executed on the main thread via `bpy.app.timers` to respect Blender's threading model.
-- **Render Guard**: Tracks render state via `bpy.app.handlers`. During renders, the server immediately returns a "busy" status. Automatically recovers from crashed renders via `load_post` handler. Can be force-reset via MCP command.
-- **Protocol**: Length-prefixed JSON messages over TCP with SO_KEEPALIVE for stale connection detection. Each message is a 4-byte big-endian length header followed by a UTF-8 JSON payload.
+- **Render Guard**: Tracks render state via `bpy.app.handlers`. During renders, the server returns a "busy" status and auto-recovers from crashed renders via `load_post` handler.
+- **Protocol**: Length-prefixed JSON messages over TCP with `SO_KEEPALIVE` for stale connection detection. Each message is a 4-byte big-endian length header followed by a UTF-8 JSON payload.
 
 </details>
+
+---
 
 ## Privacy & Security
 
 <details>
 <summary><strong>Privacy</strong></summary>
 
-- **Zero telemetry** — blend-ai collects no usage data, sends no analytics, and makes no network requests beyond the local TCP connection to Blender.
-- **Fully local** — all communication stays on your machine. No cloud services, no external APIs, no phone-home behavior.
-- **Open source** — the entire codebase is auditable. What you see is what runs.
+- **Zero telemetry** — Agent-Blend collects no usage data and makes no network requests beyond the local TCP connection to Blender
+- **Fully local** — all communication stays on your machine; no cloud services, no external APIs
+- **Open source** — the entire codebase is auditable
 
 </details>
 
 <details>
 <summary><strong>Security</strong></summary>
 
-- **Localhost only**: The TCP socket binds to `127.0.0.1` — never exposed to the network.
-- **Sandboxed code execution**: `execute_blender_code` blocks 25 dangerous imports (`os`, `subprocess`, `socket`, `shutil`, `sys`, `ctypes`, `importlib`, `pathlib`, `signal`, `multiprocessing`, `pickle`, `shelve`, `tempfile`, `http`, `urllib`, `ftplib`, `smtplib`, `xmlrpc`, `code`, `codeop`, `compileall`, `webbrowser`, `antigravity`, `turtle`, `tkinter`) and removes dangerous builtins (`__import__`, `exec`, `eval`, `compile`, `open`, `globals`, `locals`, `vars`, `input`, `breakpoint`, `exit`, `quit`, `help`, `memoryview`). Safe Blender imports (`bpy`, `bmesh`, `mathutils`, `math`, `json`) are allowed.
-- **Input validation**: All inputs pass through validators before reaching Blender — name sanitization, path traversal prevention, numeric range checks, enum allowlists.
-- **File safety**: Import operations disable `use_scripts_auto_execute` to prevent script injection from imported files. File extensions are checked against allowlists.
-- **Command allowlist**: The addon dispatcher only processes explicitly registered commands. Unknown commands are rejected.
-- **Shader node allowlist**: Only 64 known shader node types can be created — prevents arbitrary type injection.
+- **Localhost only** — the TCP socket binds to `127.0.0.1`, never exposed to the network
+- **Sandboxed code execution** — `execute_blender_code` blocks 25 dangerous imports (`os`, `subprocess`, `socket`, `shutil`, `sys`, `ctypes`, etc.) and removes dangerous builtins (`exec`, `eval`, `open`, `globals`, etc.)
+- **Input validation** — all inputs pass through validators before reaching Blender: name sanitization, path traversal prevention, numeric range checks, enum allowlists
+- **File safety** — import operations disable `use_scripts_auto_execute` to prevent script injection; file extensions are checked against allowlists
+- **Command allowlist** — the addon dispatcher only processes explicitly registered commands; unknown commands are rejected
+- **Shader node allowlist** — only 64 known shader node types can be created
 
 </details>
+
+---
 
 ## Limitations
 
 <details>
 <summary><strong>Known limitations</strong></summary>
 
-- **Blender must be running**: The MCP server communicates with Blender over TCP. Blender must be open with the addon enabled and server started.
-- **Single connection**: The addon accepts one client connection at a time. Multiple AI assistants cannot control the same Blender instance simultaneously.
-- **Selection is all-or-nothing**: Most mesh editing tools operate on all geometry. Fine-grained vertex/edge/face selection by index is not yet exposed, though `select_linked` is available.
-- **Sculpt strokes cannot be simulated**: You can configure brushes, symmetry, dyntopo, and remeshing, but actual brush strokes are not yet exposed.
-- **Node graphs require sequential calls**: Both shader node trees and geometry node trees must be built one node/connection at a time.
-- **No undo integration**: Operations appear in Blender's undo history individually but there's no MCP-level undo/redo or transaction grouping.
-- **Viewport capture requires a visible 3D viewport**: Headless Blender may not support viewport screenshots.
-- **No real-time feedback**: The MCP protocol is request/response. There's no streaming of viewport updates or render progress.
+- **Blender must be running** — the MCP server communicates with Blender over TCP. Blender must be open with the addon enabled and server started
+- **Single connection** — the addon accepts one client at a time; multiple AI assistants cannot control the same Blender instance simultaneously
+- **Selection is all-or-nothing** — most mesh editing tools operate on all geometry; fine-grained vertex/edge/face selection by index is not yet exposed (though `select_linked` is available)
+- **Sculpt strokes cannot be simulated** — you can configure brushes, symmetry, dyntopo, and remeshing, but actual brush strokes are not yet exposed
+- **Node graphs require sequential calls** — shader and geometry node trees must be built one node/connection at a time
+- **No undo integration** — operations appear in Blender's undo history individually, but there's no MCP-level undo/redo or transaction grouping
+- **Viewport capture requires a visible 3D viewport** — headless Blender may not support viewport screenshots
+- **No real-time feedback** — the MCP protocol is request/response; there's no streaming of viewport updates or render progress
 
 </details>
+
+---
 
 ## Development
 
@@ -320,30 +400,58 @@ ruff format src/ tests/
 <summary><strong>Project structure</strong></summary>
 
 ```
-blend-ai/
-├── src/blend_ai/          # MCP server
-│   ├── server.py           # FastMCP entry point
-│   ├── connection.py       # TCP client to Blender (with busy-retry)
-│   ├── validators.py       # Input validation
-│   ├── tools/              # 24 tool modules (164 tools)
-│   ├── resources/          # MCP resources (scene, objects, materials)
-│   └── prompts/            # 12 expert prompt templates
-├── addon/                  # Blender addon (zero external deps)
+Agent-Blend/
+├── src/blend_ai/              # MCP server
+│   ├── server.py              # FastMCP entry point
+│   ├── connection.py          # TCP client to Blender (with busy-retry)
+│   ├── validators.py          # Input validation
+│   ├── tools/                 # 24 tool modules (164 tools)
+│   ├── resources/             # MCP resources (scene, objects, materials)
+│   └── prompts/               # 12 expert prompt templates
+├── addon/                     # Blender addon (zero external deps)
 │   ├── blender_manifest.toml  # Blender 4.2+ Extension manifest
-│   ├── __init__.py         # bl_info (legacy fallback) + register/unregister
-│   ├── server.py           # TCP socket server (SO_KEEPALIVE)
-│   ├── dispatcher.py       # Command routing + allowlist
-│   ├── thread_safety.py    # Main-thread execution queue
-│   ├── render_guard.py     # Render state tracking + crash recovery
-│   ├── ui_panel.py         # N-panel UI (start/stop + port config)
-│   └── handlers/           # 23 handler modules
-└── tests/                  # 1186 unit tests
+│   ├── __init__.py            # Register/unregister
+│   ├── server.py              # TCP socket server (SO_KEEPALIVE)
+│   ├── dispatcher.py          # Command routing + allowlist
+│   ├── thread_safety.py       # Main-thread execution queue
+│   ├── render_guard.py        # Render state tracking + crash recovery
+│   ├── ui_panel.py            # N-panel UI (start/stop + port config)
+│   └── handlers/              # 23 handler modules
+└── tests/                     # 1190 unit tests
 ```
 
 </details>
 
-## License
+---
 
-AGPL-3.0-or-later. See [LICENSE](LICENSE).
+## Troubleshooting
 
-Copyright © 2026 jabberwock.
+**Server won't connect to Blender**
+- Make sure Blender is open and you've clicked **Start Server** in the N-panel blend-ai tab
+- Verify the port matches in both Blender and your MCP config (default: `9876`)
+- Check that no firewall is blocking `127.0.0.1:9876`
+
+**"Connection timed out" errors**
+- Blender may be busy rendering — wait for the render to finish
+- Try clicking **Stop Server** then **Start Server** in the N-panel to reset
+
+**Addon not showing in extensions list**
+- Make sure you're using Blender 4.2 or later
+- Try installing via **Edit → Preferences → Get Extensions → ▾ → Install from Disk...**
+
+**`uv` command not found**
+- Ensure `uv` is installed and on your system `PATH` — see [Step 2](#step-2--install-uv-if-not-already-installed)
+
+---
+
+## Contributing
+
+Contributions are welcome! To get started:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b my-feature`
+3. Make your changes and add tests
+4. Run the test suite: `uv run --extra dev pytest`
+5. Submit a pull request
+
+Please ensure all tests pass and new features include appropriate test coverage.

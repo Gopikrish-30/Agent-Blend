@@ -4,7 +4,6 @@
 
 Agent-Blend is a powerful MCP (Model Context Protocol) server that bridges AI assistants with Blender. It goes beyond simple tool exposure — it guides the LLM to produce professional 3D results through expert prompts, proven workflows, visual feedback, and mesh quality analysis.
 
-![Agent-Blend screenshot](./screenshot.png)
 
 ---
 
@@ -140,14 +139,23 @@ You should see a confirmation that the server is running on `127.0.0.1:9876`.
 
 ### Step 6 — Connect your AI assistant
 
-<details>
-<summary><strong>Antigravity IDE</strong></summary>
+## Setting up with Antigravity IDE
 
-1. Find your MCP config file:
-   - **Windows:** `C:\Users\{username}\.gemini\antigravity\mcp_config.json`
-   - **macOS / Linux:** `~/.gemini/antigravity/mcp_config.json`
+Antigravity IDE has native MCP support. Follow these steps to connect Agent-Blend:
 
-2. Add the following entry (see also `mcp-config.example.json` in this repo):
+#### 1. Find your MCP config file
+
+| Platform | Config file path |
+|----------|------------------|
+| **Windows** | `C:\Users\{username}\.gemini\antigravity\mcp_config.json` |
+| **macOS** | `~/.gemini/antigravity/mcp_config.json` |
+| **Linux** | `~/.gemini/antigravity/mcp_config.json` |
+
+If the file doesn't exist yet, create it.
+
+#### 2. Add Agent-Blend to the config
+
+Open the config file and add the `blend-ai` entry under `mcpServers`:
 
 ```json
 {
@@ -164,12 +172,28 @@ You should see a confirmation that the server is running on `127.0.0.1:9876`.
 }
 ```
 
-> Replace `/absolute/path/to/Agent-Blend` with the real path to your cloned folder. On Windows, use forward slashes (e.g. `C:/Users/yourname/Agent-Blend`).
+> ⚠️ **Replace `/absolute/path/to/Agent-Blend`** with the actual path where you cloned this repository.
+>
+> - **Linux/macOS example:** `/home/yourname/Agent-Blend`
+> - **Windows example:** `C:/Users/yourname/Agent-Blend` *(use forward slashes even on Windows)*
 
-3. Restart Antigravity IDE to load the server
-4. Make sure Blender is running with the server started (Step 5)
+You can also copy `mcp-config.example.json` from the repo root as a starting point.
 
-**Example prompts:**
+#### 3. Restart Antigravity IDE
+
+Close and reopen Antigravity IDE. It will automatically load all configured MCP servers on startup. You should see **blend-ai** appear in the MCP servers list.
+
+#### 4. Verify the connection
+
+Make sure Blender is open and the server is started (Step 5 above). Then in Antigravity IDE, open a chat and try:
+
+```
+> What objects are in my Blender scene?
+```
+
+If Agent-Blend is connected correctly, you'll get a live response from Blender.
+
+#### 5. Start using it
 
 ```
 > Create a red metallic sphere on a white plane with three-point lighting
@@ -177,9 +201,13 @@ You should see a confirmation that the server is running on `127.0.0.1:9876`.
 > Add a subdivision surface modifier to the sphere and set it to level 3
 
 > Analyze the mesh quality of the sphere and fix any issues
+
+> Set up a turntable animation and render it to /tmp/turntable/
 ```
 
-</details>
+> 💡 **Tip:** Agent-Blend works best when Blender's 3D Viewport is visible on screen — the visual feedback tools rely on it.
+
+---
 
 <details>
 <summary><strong>Claude Desktop</strong></summary>
